@@ -32,6 +32,24 @@ public class MainActivity extends AppCompatActivity {
          btn_MC = (Button) findViewById(R.id.btn_MC);
          btn_MR = (Button) findViewById(R.id.btn_MR);
     }
+//    public void point_text(String str,String oper, Float result)
+//    {
+//        Integer result_Int;
+//        String substr = str.substring(str.indexOf(".")+1, str.length());
+//        if(substr.equals("0"))
+//        {
+//            result_Int = Math.round(result);
+//            tv_up.setText(Integer.toString(result_Int) + oper);
+//            tv_down.setText(Integer.toString(result_Int));
+//        }
+//        else
+//        {
+//            tv_up.setText(Float.toString(result) + oper);
+//            tv_down.setText(Float.toString(result));
+//        }
+//
+//    }
+
     public void clickNumber(View v)
     {
         Button b= (Button)findViewById(v.getId());
@@ -211,7 +229,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         android.util.Log.i("이퀄 테스트", "aa");
-        if(text_up.charAt(text_up.length()-1) == '+')
+        if(text_up.isEmpty())
+        {
+            tv_up.setText(tv_down.getText().toString()+"=");
+        }
+        else if(text_up.charAt(text_up.length()-1) == '+')
         {
             n1 = Float.parseFloat(text_up.substring(0, text_up.length()-1));
             n2 = Float.parseFloat(tv_down.getText().toString());
@@ -282,6 +304,10 @@ public class MainActivity extends AppCompatActivity {
             {
                 tv_down.setText(Float.toString(result_Float));
             }
+        }
+        else if(text_up.indexOf('+') == -1 && text_up.indexOf('-') == -1 && text_up.indexOf('x') == -1 && text_up.indexOf('÷') == -1)
+        {
+            return;
         }
         else if(text_up.charAt(text_up.length()-1) == '=')
         {
