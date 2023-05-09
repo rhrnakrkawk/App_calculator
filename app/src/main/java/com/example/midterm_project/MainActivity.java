@@ -3,6 +3,8 @@ package com.example.midterm_project;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ContentInfoCompat;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Stack; //import
 
 import android.os.Bundle;
@@ -13,7 +15,8 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
     Float mem = null;
-    Float n1, n2;
+    BigDecimal bmem = null;
+    BigDecimal b1, b2;
     TextView tv_down, tv_up;
     Button btn_MC, btn_MR;
     Integer isFirst = 0; // 처음 0이 있을 시 맨 앞 0을 지우고 입력
@@ -33,38 +36,6 @@ public class MainActivity extends AppCompatActivity {
          btn_MC = (Button) findViewById(R.id.btn_MC);
          btn_MR = (Button) findViewById(R.id.btn_MR);
     }
-    public void point_text_operator(String str,String oper, Float result)
-    {
-        Integer result_Int;
-        String substr = str.substring(str.indexOf(".")+1, str.length());
-        if(substr.equals("0"))
-        {
-            result_Int = Math.round(result);
-            tv_up.setText(Integer.toString(result_Int) + oper);
-            tv_down.setText(Integer.toString(result_Int));
-        }
-        else
-        {
-            tv_up.setText(Float.toString(result) + oper);
-            tv_down.setText(Float.toString(result));
-        }
-
-    }
-    public void point_text_equal(String str, Float result)
-    {
-        Integer result_Int;
-        String substr = str.substring(str.indexOf(".")+1, str.length());
-        if(substr.equals("0"))
-        {
-            result_Int = Math.round(result);
-            tv_down.setText(Integer.toString(result_Int));
-        }
-        else
-        {
-            tv_down.setText(Float.toString(result));
-        }
-
-    }
 
     public void clickNumber(View v)
     {
@@ -82,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else if(isCalculated == 1)
         {
+            android.util.Log.i("ccc", "ccc");
             tv_up.setText(null);
             tv_down.setText(b.getText().toString());
             isCalculated = 0;
@@ -94,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 tv_down.setText(tv_down.getText().toString() + b.getText().toString());
-
             }
         }
         isEntered = 1;
@@ -104,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
         tv_down.setText("0");
         tv_up.setText(null);
         isFirst = 0;
+        isPointEntered = 0;
+
     }
     public void tv_upClear(View v)
     {
@@ -128,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
                 tv_down.setText("0");
             else
                 tv_down.setText(text.substring(0, text.length()-1));
+
+            if(!subText.contains(".")){
+                isPointEntered = 0;
+            }
         }
     }
     public void operator(View v)
@@ -135,17 +112,18 @@ public class MainActivity extends AppCompatActivity {
         Button b= (Button)findViewById(v.getId());
         String text_up = tv_up.getText().toString();
         String text_down = tv_down.getText().toString();
-        String str;
+        String bstr;
         String oper = b.getText().toString();
-        Float result_Float;
+
+        BigDecimal result_Big = null;
         if(text_up.isEmpty())
         {
             tv_up.setText(tv_down.getText().toString() +oper);
         }
         else if(isEntered == 0) // 연산자 연속 클릭 시 계산 방지
         {
-            str = text_up.substring(0, text_up.length()-1);
-            tv_up.setText(str + oper);
+            bstr = text_up.substring(0, text_up.length()-1);
+            tv_up.setText(bstr + oper);
         }
         else if(text_up.contains("="))
         {
@@ -153,140 +131,111 @@ public class MainActivity extends AppCompatActivity {
         }
         else
         {
-            n1 = Float.parseFloat(text_up.substring(0, text_up.length()-1));
-            n2 = Float.parseFloat(tv_down.getText().toString());
-            if(text_up.charAt(text_up.length()-1) == '+')
-            {
-                result_Float = n1 + n2;
-                str = result_Float.toString();
-
-                point_text_operator(str,oper,result_Float);
-            }
-            else if(text_up.charAt(text_up.length()-1) == '-')
-            {
-                result_Float = n1 - n2;
-                str = result_Float.toString();
-
-                point_text_operator(str, oper, result_Float);
-            }
-            else if(text_up.charAt(text_up.length()-1) == 'x')
-            {
-                result_Float = n1 * n2;
-                str = result_Float.toString();
-
-                point_text_operator(str, oper, result_Float);
-            }
-            else if(text_up.charAt(text_up.length()-1) == '÷')
-            {
-                result_Float = n1 / n2;
-                str = result_Float.toString();
-
-                point_text_operator(str, oper, result_Float);
-            }
-            else if(text_up.charAt(text_up.length()-1) == '=')
+            if(text_up.charAt(text_up.length()-1) == '=')
             {
                 tv_up.setText(text_down + oper);
+            }
+            else
+            {
+                b1 = new BigDecimal(text_up.substring(0, text_up.length()-1));
+                b2 = new BigDecimal(tv_down.getText().toString());
+
+                if(text_up.charAt(text_up.length()-1) == '+')
+                {
+                    result_Big = b1.add(b2);
+                }
+                else if(text_up.charAt(text_up.length()-1) == '-')
+                {
+                    result_Big = b1.subtract(b2);
+                }
+                else if(text_up.charAt(text_up.length()-1) == 'x')
+                {
+                    result_Big = b1.multiply(b2);
+                }
+                else if(text_up.charAt(text_up.length()-1) == '÷')
+                {
+                    result_Big = b1.divide(b2, 10, RoundingMode.HALF_UP);
+                }
+                String num2 = (result_Big.setScale(10, RoundingMode.HALF_UP).stripTrailingZeros()).toPlainString();
+                tv_up.setText(num2+oper);
+                tv_down.setText(num2);
             }
         }
         isFirst = 1;
         isEntered = 0;
         isPointEntered = 0;
+        isCalculated = 0;
     }
     public void equal(View v)
     {
         String text_up = tv_up.getText().toString();
         String text_down = tv_down.getText().toString();
-        String str;
-        Float result_Float;
-        Integer result_Int;
-
+        BigDecimal result_Big = null;
         if(text_up.isEmpty())
         {
             tv_up.setText(tv_down.getText().toString()+"=");
         }
-        else if(text_up.charAt(text_up.length()-1) == '+')
-        {
-            n1 = Float.parseFloat(text_up.substring(0, text_up.length()-1));
-            n2 = Float.parseFloat(tv_down.getText().toString());
-            tv_up.setText(text_up + text_down +"=");
-            result_Float = n1 + n2;
-            str = Float.toString(result_Float);
-            point_text_equal(str,result_Float);
-        }
-        else if(text_up.charAt(text_up.length()-1) == '-')
-        {
-            n1 = Float.parseFloat(text_up.substring(0, text_up.length()-1));
-            n2 = Float.parseFloat(tv_down.getText().toString());
-            tv_up.setText(text_up + text_down +"=");
-            result_Float = n1 - n2;
-            str = Float.toString(result_Float);
-            point_text_equal(str,result_Float);
-        }
-        else if(text_up.charAt(text_up.length()-1) == 'x')
-        {
-            n1 = Float.parseFloat(text_up.substring(0, text_up.length()-1));
-            n2 = Float.parseFloat(tv_down.getText().toString());
-            tv_up.setText(text_up + text_down +"=");
-            result_Float = n1 * n2;
-            str = Float.toString(result_Float);
-            point_text_equal(str,result_Float);
-        }
-        else if(text_up.charAt(text_up.length()-1) == '÷')
-        {
-            n1 = Float.parseFloat(text_up.substring(0, text_up.length()-1));
-            n2 = Float.parseFloat(tv_down.getText().toString());
-            tv_up.setText(text_up + text_down +"=");
-            result_Float = n1 / n2;
-            str = Float.toString(result_Float);
-            point_text_equal(str,result_Float);
-        }
-        else if(text_up.indexOf('+') == -1 && text_up.indexOf('-') == -1 && text_up.indexOf('x') == -1 && text_up.indexOf('÷') == -1)
-        {
-            return;
-        }
         else if(text_up.charAt(text_up.length()-1) == '=')
         {
-            if(text_up.indexOf('+') != -1)
+            b2 = new BigDecimal(text_down);
+            if(text_up.indexOf('+') == -1 && text_up.indexOf('-') == -1 && text_up.indexOf('x') == -1 && text_up.indexOf('÷') == -1)
+            {
+                return;
+            }
+            else if(text_up.indexOf('+') != -1)
             {
                 String n = text_up.substring(text_up.indexOf('+')+1, text_up.length()-1);
-                n1 = Float.parseFloat(n);
-                n2 = Float.parseFloat(text_down);
-                result_Float = n1 + n2;
+                b1 = new BigDecimal(n);
+                result_Big = b1.add(b2);
                 tv_up.setText(text_down + "+"+n +"=");
-                str = Float.toString(result_Float);
-                point_text_equal(str,result_Float);
             }
             else if(text_up.lastIndexOf('-') != -1)
             {
                 String n = text_up.substring(text_up.lastIndexOf('-')+1, text_up.length()-1);
-                n2 = Float.parseFloat(n);
-                n1 = Float.parseFloat(text_down);
-                result_Float = n1 - n2;
+                b1 = new BigDecimal(n);
+                result_Big = b2.subtract(b1);
                 tv_up.setText(text_down + "-"+n +"=");
-                str = Float.toString(result_Float);
-                point_text_equal(str,result_Float);
             }
             else if(text_up.indexOf('x') != -1)
             {
-                String n = text_up.substring(text_up.indexOf('x')+1, text_up.length()-1);
-                n1 = Float.parseFloat(n);
-                n2 = Float.parseFloat(text_down);
-                result_Float = n1 * n2;
+                String n = text_up.substring(text_up.lastIndexOf('x')+1, text_up.length()-1);
+                b1 = new BigDecimal(n);
+                result_Big = b1.multiply(b2);
                 tv_up.setText(text_down + "x"+n +"=");
-                str = Float.toString(result_Float);
-                point_text_equal(str,result_Float);
             }
             else if(text_up.indexOf('÷') != -1)
             {
-
-                String n = text_up.substring(text_up.indexOf('÷')+1, text_up.length()-1);
-                n2 = Float.parseFloat(n);
-                n1 = Float.parseFloat(text_down);
-                result_Float = n1 / n2;
+                String n = text_up.substring(text_up.lastIndexOf('÷')+1, text_up.length()-1);
+                b1 = new BigDecimal(n);
+                result_Big = b2.divide(b1, 10, RoundingMode.HALF_UP);
                 tv_up.setText(text_down + "÷"+n +"=");
-                str = Float.toString(result_Float);
-                point_text_equal(str,result_Float);
             }
+            String num2 = (result_Big.setScale(10, RoundingMode.HALF_UP).stripTrailingZeros()).toPlainString();
+            tv_down.setText(num2);
+        }
+        else
+        {
+            b1 = new BigDecimal(text_up.substring(0, text_up.length()-1));
+            b2 = new BigDecimal(tv_down.getText().toString());
+            tv_up.setText(text_up + text_down +"=");
+            if(text_up.charAt(text_up.length()-1) == '+')
+            {
+                result_Big = b1.add(b2);
+            }
+            else if(text_up.charAt(text_up.length()-1) == '-')
+            {
+                result_Big = b1.subtract(b2);
+            }
+            else if(text_up.charAt(text_up.length()-1) == 'x')
+            {
+                result_Big = b1.multiply(b2);
+            }
+            else if(text_up.charAt(text_up.length()-1) == '÷')
+            {
+                result_Big = b1.divide(b2, 10, RoundingMode.HALF_UP);
+            }
+            String num2 = (result_Big.setScale(10, RoundingMode.HALF_UP).stripTrailingZeros()).toPlainString();
+            tv_down.setText(num2);
         }
         isEntered = 1;
         isCalculated = 1;
@@ -307,22 +256,42 @@ public class MainActivity extends AppCompatActivity {
     {
         String text_down = tv_down.getText().toString();
 
-        if(isPointEntered == 0)
+        if(isFirst == 1)
+        {
+            tv_down.setText("0.");
+        }
+        else if(isMemoryCalculated == 1)
+        {
+            tv_down.setText("0.");
+            isMemoryCalculated = 0;
+        }
+        else if(isCalculated == 1)
+        {
+            tv_up.setText(null);
+            tv_down.setText("0.");
+            isCalculated = 0;
+        }
+        else if(isPointEntered == 0)
         {
             tv_down.setText(text_down+".");
             isPointEntered = 1;
         }
+
+        isFirst = 0;
+        isCalculated = 0;
+        isEntered = 1;
     }
     public void memoryPlus(View v)
     {
-        if(mem == null)
+        BigDecimal temp;
+        if(bmem == null)
         {
-            mem = Float.parseFloat(tv_down.getText().toString());
-
+            bmem = new BigDecimal(tv_down.getText().toString());
         }
         else
         {
-            mem += Float.parseFloat(tv_down.getText().toString());
+            temp = new BigDecimal(tv_down.getText().toString());
+            bmem = bmem.add(temp);
         }
         btn_MC.setEnabled(true);
         btn_MR.setEnabled(true);
@@ -330,13 +299,15 @@ public class MainActivity extends AppCompatActivity {
     }
     public void memoryMinus(View v)
     {
-        if(mem == null)
+        BigDecimal temp;
+        if(bmem == null)
         {
-            mem = Float.parseFloat(tv_down.getText().toString());
+            bmem = new BigDecimal(tv_down.getText().toString());
         }
         else
         {
-            mem -= Float.parseFloat(tv_down.getText().toString());
+            temp = new BigDecimal(tv_down.getText().toString());
+            bmem = bmem.subtract(temp);
         }
         btn_MC.setEnabled(true);
         btn_MR.setEnabled(true);
@@ -344,30 +315,22 @@ public class MainActivity extends AppCompatActivity {
     }
     public void memoryRead(View v)
     {
-        String m = Float.toString(mem);
-        String subm = m.substring(m.indexOf(".")+1, m.length());
-        Integer i = Math.round(mem);
-        if(subm.equals("0"))
-        {
-            tv_up.setText(null);
-            tv_down.setText(i.toString());
-        }
-        else {
-            tv_up.setText(null);
-            tv_down.setText(mem.toString());
-        }
+        //String m = bmem.toString();
+        String num2 = (bmem.setScale(10, RoundingMode.HALF_UP).stripTrailingZeros()).toPlainString();
+        tv_up.setText(null);
+        tv_down.setText(num2.toString());
         isMemoryCalculated = 1;
     }
     public void memoryClear(View v)
     {
-        mem = null;
+        bmem = null;
         btn_MC.setEnabled(false);
         btn_MR.setEnabled(false);
         isMemoryCalculated = 1;
     }
     public void memorySet(View v)
     {
-        mem = Float.parseFloat(tv_down.getText().toString());
+        bmem = new BigDecimal(tv_down.getText().toString());
         btn_MC.setEnabled(true);
         btn_MR.setEnabled(true);
         isMemoryCalculated = 1;
