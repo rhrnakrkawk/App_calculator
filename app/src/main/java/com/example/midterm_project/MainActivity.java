@@ -14,14 +14,12 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
-    Float mem = null;
     BigDecimal bmem = null;
     BigDecimal b1, b2;
     TextView tv_down, tv_up;
     Button btn_MC, btn_MR;
     Integer isFirst = 0; // 처음 0이 있을 시 맨 앞 0을 지우고 입력
     Integer isEntered = 0; // 숫자 입력 안했을 시 연속으로 계산하는 것을 방지
-    Integer isPointEntered = 0;
     Integer isMemoryCalculated = 0;
     Integer isCalculated = 0;
 
@@ -36,6 +34,45 @@ public class MainActivity extends AppCompatActivity {
          btn_MC = (Button) findViewById(R.id.btn_MC);
          btn_MR = (Button) findViewById(R.id.btn_MR);
     }
+
+    public void Set_Number_Format(BigDecimal result_Big, Integer i, String oper)
+    {
+        Double result_Double = result_Big.doubleValue();
+        String Double_String = result_Double.toString();
+        String set;
+        if(Double_String.contains("E"))
+        {
+            String Num_E = Integer.toString(Math.abs(Integer.parseInt(Double_String.substring(Double_String.indexOf('E')+1))));
+            if(Integer.parseInt(Num_E) <= 10)
+            {
+                set = (new BigDecimal(Double_String)).toPlainString();
+                tv_down.setText(set);
+            }
+            else
+            {
+                set = Double_String;
+                tv_down.setText(set);
+            }
+        }
+        else {
+            String s = Double_String.substring(Double_String.indexOf("."));
+            if(s.equals(".0"))
+            {
+                set = Integer.toString((int) Math.round(result_Double));
+                tv_down.setText(set);
+            }
+            else
+            {
+                set = Double_String;
+                tv_down.setText(Double_String);
+            }
+        }
+        if(i == 1)
+        {
+            tv_up.setText(set+oper);
+        }
+    }
+
 
     public void clickNumber(View v)
     {
@@ -53,7 +90,6 @@ public class MainActivity extends AppCompatActivity {
         }
         else if(isCalculated == 1)
         {
-            android.util.Log.i("ccc", "ccc");
             tv_up.setText(null);
             tv_down.setText(b.getText().toString());
             isCalculated = 0;
@@ -75,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
         tv_down.setText("0");
         tv_up.setText(null);
         isFirst = 0;
-        isPointEntered = 0;
-
     }
     public void tv_upClear(View v)
     {
@@ -101,10 +135,6 @@ public class MainActivity extends AppCompatActivity {
                 tv_down.setText("0");
             else
                 tv_down.setText(text.substring(0, text.length()-1));
-
-            if(!subText.contains(".")){
-                isPointEntered = 0;
-            }
         }
     }
     public void operator(View v)
@@ -154,16 +184,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else if(text_up.charAt(text_up.length()-1) == '÷')
                 {
-                    result_Big = b1.divide(b2, 10, RoundingMode.HALF_UP);
+                    result_Big = b1.divide(b2, 100, RoundingMode.HALF_UP);
                 }
-                String num2 = (result_Big.setScale(10, RoundingMode.HALF_UP).stripTrailingZeros()).toPlainString();
-                tv_up.setText(num2+oper);
-                tv_down.setText(num2);
+                Set_Number_Format(result_Big, 1, oper);
             }
         }
         isFirst = 1;
         isEntered = 0;
-        isPointEntered = 0;
+        //isPointEntered = 0;
         isCalculated = 0;
     }
     public void equal(View v)
@@ -178,45 +206,47 @@ public class MainActivity extends AppCompatActivity {
         else if(text_up.charAt(text_up.length()-1) == '=')
         {
             b2 = new BigDecimal(text_down);
-            if(text_up.indexOf('+') == -1 && text_up.indexOf('-') == -1 && text_up.indexOf('x') == -1 && text_up.indexOf('÷') == -1)
+            if(text_up.indexOf('+', text_up.indexOf("E")+2) == -1 && text_up.indexOf('-', text_up.indexOf("E")+2) == -1 && text_up.indexOf('x', text_up.indexOf("E")+2) == -1 && text_up.indexOf('÷', text_up.indexOf("E")+2) == -1)
             {
                 return;
             }
-            else if(text_up.indexOf('+') != -1)
+            else if(text_up.indexOf('+', text_up.indexOf("E")+2) != -1)
             {
-                String n = text_up.substring(text_up.indexOf('+')+1, text_up.length()-1);
+                String n = text_up.substring(text_up.indexOf('+', text_up.indexOf("E")+2)+1, text_up.length()-1);
                 b1 = new BigDecimal(n);
                 result_Big = b1.add(b2);
                 tv_up.setText(text_down + "+"+n +"=");
             }
-            else if(text_up.lastIndexOf('-') != -1)
+            else if(text_up.indexOf('-', text_up.indexOf("E")+2) != -1)
             {
-                String n = text_up.substring(text_up.lastIndexOf('-')+1, text_up.length()-1);
+                String n = text_up.substring(text_up.indexOf('-', text_up.indexOf("E")+2)+1, text_up.length()-1);
                 b1 = new BigDecimal(n);
                 result_Big = b2.subtract(b1);
                 tv_up.setText(text_down + "-"+n +"=");
             }
-            else if(text_up.indexOf('x') != -1)
+            else if(text_up.indexOf('x', text_up.indexOf("E")+2) != -1)
             {
-                String n = text_up.substring(text_up.lastIndexOf('x')+1, text_up.length()-1);
+
+                String n = text_up.substring(text_up.indexOf('x')+1, text_up.length()-1);
                 b1 = new BigDecimal(n);
                 result_Big = b1.multiply(b2);
                 tv_up.setText(text_down + "x"+n +"=");
             }
-            else if(text_up.indexOf('÷') != -1)
+            else if(text_up.indexOf('÷', text_up.indexOf("E")+2) != -1)
             {
-                String n = text_up.substring(text_up.lastIndexOf('÷')+1, text_up.length()-1);
+                String n = text_up.substring(text_up.indexOf('÷')+1, text_up.length()-1);
                 b1 = new BigDecimal(n);
-                result_Big = b2.divide(b1, 10, RoundingMode.HALF_UP);
+                //result_Big = b2.divide(b1, 10, RoundingMode.HALF_UP);
+                result_Big = b2.divide(b1, 100, RoundingMode.HALF_UP);
                 tv_up.setText(text_down + "÷"+n +"=");
             }
-            String num2 = (result_Big.setScale(10, RoundingMode.HALF_UP).stripTrailingZeros()).toPlainString();
-            tv_down.setText(num2);
+            Set_Number_Format(result_Big, 0, null);
         }
         else
         {
             b1 = new BigDecimal(text_up.substring(0, text_up.length()-1));
             b2 = new BigDecimal(tv_down.getText().toString());
+
             tv_up.setText(text_up + text_down +"=");
             if(text_up.charAt(text_up.length()-1) == '+')
             {
@@ -232,10 +262,9 @@ public class MainActivity extends AppCompatActivity {
             }
             else if(text_up.charAt(text_up.length()-1) == '÷')
             {
-                result_Big = b1.divide(b2, 10, RoundingMode.HALF_UP);
+                result_Big = b1.divide(b2, 100, RoundingMode.HALF_UP );
             }
-            String num2 = (result_Big.setScale(10, RoundingMode.HALF_UP).stripTrailingZeros()).toPlainString();
-            tv_down.setText(num2);
+            Set_Number_Format(result_Big, 0, null);
         }
         isEntered = 1;
         isCalculated = 1;
@@ -243,7 +272,11 @@ public class MainActivity extends AppCompatActivity {
     public void signChange(View v)
     {
         String text_down = tv_down.getText().toString();
-        if(text_down.charAt(0) == '-')
+        if(text_down == "0")
+        {
+            return;
+        }
+        else if(text_down.charAt(0) == '-')
         {
             tv_down.setText(text_down.substring(1, text_down.length()));
         }else
@@ -271,10 +304,9 @@ public class MainActivity extends AppCompatActivity {
             tv_down.setText("0.");
             isCalculated = 0;
         }
-        else if(isPointEntered == 0)
+        else if(!text_down.contains("."))//isPointEntered == 0)
         {
             tv_down.setText(text_down+".");
-            isPointEntered = 1;
         }
 
         isFirst = 0;
@@ -315,7 +347,6 @@ public class MainActivity extends AppCompatActivity {
     }
     public void memoryRead(View v)
     {
-        //String m = bmem.toString();
         String num2 = (bmem.setScale(10, RoundingMode.HALF_UP).stripTrailingZeros()).toPlainString();
         tv_up.setText(null);
         tv_down.setText(num2.toString());
