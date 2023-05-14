@@ -10,7 +10,6 @@ __사칙연산 버튼__
 
 __MS__
 - 입력된 값을 저장
--
 __MC__
 - 저장된 값을 삭제
 
@@ -24,5 +23,5 @@ __M-__
 - 저장된 값에 입력된 값을 뺌
 
 ---
+<img src = "https://github.com/rhrnakrkawk/App_calculator/assets/125804293/8e9afe98-ec70-4037-ad04-1e49dc1d64f7" width="25%" height="25% ">
 
-![Screenshot_20230514-200904_MidTerm_Project (1)](https://github.com/rhrnakrkawk/App_calculator/assets/125804293/8e9afe98-ec70-4037-ad04-1e49dc1d64f7)
